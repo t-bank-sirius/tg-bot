@@ -39,7 +39,7 @@ async def start(message: Message):
     builder = InlineKeyboardBuilder()
     builder.add(InlineKeyboardButton(
         text="Открыть Mini App",
-        web_app=WebAppInfo(url="https://github.com")
+        web_app=WebAppInfo(url="https://user365944644-cvuxdunx.tunnel.vk-apps.com/auth")
     ))
     await message.answer("Привет!", reply_markup=builder.as_markup())
 
@@ -50,6 +50,7 @@ async def on_startup():
     
     settings = BotSettings()
     bot = Bot(token=settings.TOKEN)
+    
     asyncio.create_task(dp.start_polling(bot))
 
 
