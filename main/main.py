@@ -1,7 +1,9 @@
+import sys
+import os
 import logging
 import asyncio
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel
 from aiogram import Dispatcher, Bot
@@ -9,10 +11,15 @@ from aiogram.filters.command import CommandStart
 from aiogram.types import Message, WebAppInfo, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from .main_router import router as main_router
 
 
 app = FastAPI()
 dp = Dispatcher()
+dp.include_router(
+    main_router
+)
+
 bot = None
 
 
@@ -39,7 +46,7 @@ async def start(message: Message):
     builder = InlineKeyboardBuilder()
     builder.add(InlineKeyboardButton(
         text="Открыть Mini App",
-        web_app=WebAppInfo(url="https://user365944644-cvuxdunx.tunnel.vk-apps.com/auth")
+        web_app=WebAppInfo(url="https://all-squids-film.loca.lt/auth")
     ))
     await message.answer("Привет!", reply_markup=builder.as_markup())
 
@@ -47,13 +54,9 @@ async def start(message: Message):
 @app.on_event("startup")
 async def on_startup():
     global bot
+    logging.basicConfig(level=logging.INFO)
     
     settings = BotSettings()
     bot = Bot(token=settings.TOKEN)
     
     asyncio.create_task(dp.start_polling(bot))
-
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    uvicorn.run("main:app", host="0.0.0.0", port=5000, reload=True)
