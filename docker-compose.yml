@@ -1,0 +1,9 @@
+services:
+  tgbot:
+    build: .
+    env_file:
+      - ./.env
+    volumes:
+      - .:/app
+    ports:
+      - 8004:8004
