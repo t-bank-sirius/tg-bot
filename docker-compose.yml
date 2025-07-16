@@ -1,3 +1,6 @@
+version: "3.3"
+
+
 services:
   tgbot:
     build: .
@@ -6,4 +9,10 @@ services:
     volumes:
       - .:/app
     ports:
-      - 8004:8004
+      - "8004:8004"
+    networks:
+      - shared-net
+
+networks:
+  shared-net:
+    external: true

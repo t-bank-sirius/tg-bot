@@ -23,7 +23,7 @@ class PhotoState(StatesGroup):
 
 async def response(message: Message, state: FSMContext, mesg):
     if isinstance(mesg, dict):
-        if mesg['image']:
+        if mesg.get('image'):
             async with ChatActionSender.upload_photo(chat_id=message.chat.id, bot=message.bot):
                 decoded_buffer = await decode(mesg['image'])
                 image_bytes = decoded_buffer.read()
