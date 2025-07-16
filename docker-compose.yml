@@ -9,10 +9,6 @@ services:
     volumes:
       - .:/app
     ports:
-      - "8004:8004"
-    networks:
-      - shared-net
-
-networks:
-  shared-net:
-    external: true
+      - 8004:8004
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

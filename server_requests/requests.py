@@ -10,7 +10,7 @@ async def new_message(message: str, user_id: int, image: str = None):
     
     try:
         async with ClientSession() as session:
-            async with session.post('http://api:8002/user/new-message', json=data) as response:
+            async with session.post('http://host.docker.internal:8002/user/new-message', json=data) as response:
                 resp = await response.json()
                 return resp
                 

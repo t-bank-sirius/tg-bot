@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from aiogram import Dispatcher, Bot
 from aiogram.filters.command import CommandStart
+from aiogram.filters import Command
 from aiogram.types import Message, WebAppInfo, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from pydantic_settings import BaseSettings, SettingsConfigDict
