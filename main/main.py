@@ -5,14 +5,12 @@ import asyncio
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from fastapi import FastAPI
-from pydantic import BaseModel
 from aiogram import Dispatcher, Bot
 from aiogram.filters.command import CommandStart
-from aiogram.filters import Command
 from aiogram.types import Message, WebAppInfo, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from .main_router import router as main_router
+from .settings import ServerData, BotSettings, AppSettings
 
 
 app = FastAPI()
@@ -22,16 +20,6 @@ dp.include_router(
 )
 
 bot = None
-
-
-class ServerData(BaseModel):
-    chat_id: int
-    init_message: str
-
-
-class BotSettings(BaseSettings):
-    TOKEN: str
-    model_config = SettingsConfigDict(env_prefix='BOT_')
 
 
 @app.post('/hello')
@@ -44,10 +32,12 @@ async def send_hello(from_server: ServerData):
 
 @dp.message(CommandStart())
 async def start(message: Message):
+    app = AppSettings()
+
     builder = InlineKeyboardBuilder()
     builder.add(InlineKeyboardButton(
         text="Открыть Mini App",
-        web_app=WebAppInfo(url="https://all-squids-film.loca.lt/auth")
+        web_app=WebAppInfo(url=f"{app.URL}/auth")
     ))
     await message.answer("Привет!", reply_markup=builder.as_markup())
 
