@@ -1,4 +1,3 @@
-import asyncio
 from io import BytesIO
 from aiogram import Router, F
 from aiogram.utils.chat_action import ChatActionSender
@@ -7,7 +6,16 @@ from server_requests.requests import new_message
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from .photo import decode, encode_image_from_bytesio
+from telegramify_markdown import markdownify
 
+
+async def convert_markdown_to_telegram(text: str) -> str:
+    try:
+        converted = markdownify(text, max_line_length=None, normalize_whitespace=False)
+        return converted
+    except Exception as e:
+        print(f"Ошибка при конвертации через md2tgmd: {e}")
+        return "error"
 
 
 router = Router(name=__name__)
@@ -20,25 +28,39 @@ class ChatState(StatesGroup):
 class PhotoState(StatesGroup):
     caption = State()
 
-
 async def response(message: Message, state: FSMContext, mesg):
     if isinstance(mesg, dict):
         if mesg.get('image'):
-            print(f'Принял фото: {mesg.get('image')[:20]}')
+            print(f'Принял фото: {mesg.get("image")[:20]}')
             async with ChatActionSender.upload_photo(chat_id=message.chat.id, bot=message.bot):
                 decoded_buffer = await decode(mesg['image'])
                 image_bytes = decoded_buffer.read()
                 input_file = BufferedInputFile(file=image_bytes, filename="photo.jpg")
                 
                 await message.bot.send_photo(chat_id=message.chat.id, photo=input_file)
-                
-        await message.answer(
-            text=mesg['message']
-        )
+
+        txt = await convert_markdown_to_telegram(mesg['message'])
+        try:
+            await message.answer(
+                text=txt, parse_mode='MarkdownV2'
+            )
+        except Exception as e:
+            print(f'Ошибка при отправке сообщения: {e}')
+            print(f'Текст, который вызвал ошибку: {txt}')
+            await message.answer(
+                text=mesg['message']
+            )
     else:
-        await message.answer(
-            text=mesg
-        )
+        txt = await convert_markdown_to_telegram(mesg)
+        try:
+            await message.answer(
+                text=txt, parse_mode='MarkdownV2'
+            )
+        except Exception as e:
+            print(f'Ошибка при отправке сообщения: {e}')
+            await message.answer(
+                text=mesg
+            )
     await state.clear()
 
 
