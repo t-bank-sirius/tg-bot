@@ -18,5 +18,4 @@ async def new_message(message: str, user_id: int, image: str = None):
                 return resp
                 
     except Exception as er:
-        return str(er)
-        return 'Возникла ошибка'
+        return 

@@ -11,11 +11,9 @@ from telegramify_markdown import markdownify
 
 async def convert_markdown_to_telegram(text: str) -> str:
     try:
-        converted = markdownify(text, max_line_length=None, normalize_whitespace=False)
-        return converted
-    except Exception as e:
-        print(f"Ошибка при конвертации через md2tgmd: {e}")
-        return "error"
+        return markdownify(text, max_line_length=None, normalize_whitespace=False)
+    except Exception:
+        return text or "error"
 
 
 router = Router(name=__name__)
@@ -28,39 +26,24 @@ class ChatState(StatesGroup):
 class PhotoState(StatesGroup):
     caption = State()
 
-async def response(message: Message, state: FSMContext, mesg):
-    if isinstance(mesg, dict):
-        if mesg.get('image'):
-            print(f'Принял фото: {mesg.get("image")[:20]}')
-            async with ChatActionSender.upload_photo(chat_id=message.chat.id, bot=message.bot):
-                decoded_buffer = await decode(mesg['image'])
-                image_bytes = decoded_buffer.read()
-                input_file = BufferedInputFile(file=image_bytes, filename="photo.jpg")
-                
-                await message.bot.send_photo(chat_id=message.chat.id, photo=input_file)
 
-        txt = await convert_markdown_to_telegram(mesg['message'])
-        try:
-            await message.answer(
-                text=txt, parse_mode='MarkdownV2'
-            )
-        except Exception as e:
-            print(f'Ошибка при отправке сообщения: {e}')
-            print(f'Текст, который вызвал ошибку: {txt}')
-            await message.answer(
-                text=mesg['message']
-            )
-    else:
-        txt = await convert_markdown_to_telegram(mesg)
-        try:
-            await message.answer(
-                text=txt, parse_mode='MarkdownV2'
-            )
-        except Exception as e:
-            print(f'Ошибка при отправке сообщения: {e}')
-            await message.answer(
-                text=mesg
-            )
+async def response(message: Message, state: FSMContext, mesg: dict):
+    if mesg.get('image'):
+        buffer = await decode(mesg['image'])
+        image_bytes = buffer.read()
+        file = BufferedInputFile(image_bytes, filename="photo.jpg")
+
+        await ChatActionSender.upload_photo(chat_id=message.chat.id, bot=message.bot)
+        await message.bot.send_photo(chat_id=message.chat.id, photo=file)
+        
+    raw_text = mesg.get('detail') or mesg.get('message', '')
+    formatted = await convert_markdown_to_telegram(raw_text)
+
+    try:
+        await message.answer(text=formatted, parse_mode='MarkdownV2')
+    except Exception:
+        await message.answer(text=raw_text)
+
     await state.clear()
 
 
