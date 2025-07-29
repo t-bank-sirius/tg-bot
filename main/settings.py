@@ -15,4 +15,11 @@ class BotSettings(BaseSettings):
 class AppSettings(BaseSettings):
     URL: str
     SERVER_URL: str
+    HEADER_TYPE: str
     model_config = SettingsConfigDict(env_prefix='APP_')
+
+
+class JWTSecrets(BaseSettings):
+    SECRET: str
+    
+    model_config = SettingsConfigDict(env_prefix='JWT_')

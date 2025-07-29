@@ -7,7 +7,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from fastapi import FastAPI
 from aiogram import Dispatcher, Bot
 from aiogram.filters.command import CommandStart
-from aiogram.types import Message, WebAppInfo, InlineKeyboardButton
+from aiogram.types import Message, WebAppInfo, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from .main_router import router as main_router
 from .settings import ServerData, BotSettings, AppSettings
@@ -24,10 +24,16 @@ bot = None
 
 @app.post('/hello')
 async def send_hello(from_server: ServerData):
+    kb = [
+       [
+           KeyboardButton(text="Очистить контекст"),
+       ],
+   ]
+    keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
     chat_id = from_server.chat_id
     text = from_server.init_message
     
-    await bot.send_message(chat_id=chat_id, text=text)
+    await bot.send_message(chat_id=chat_id, text=text, reply_markup=keyboard)
 
 
 @dp.message(CommandStart())

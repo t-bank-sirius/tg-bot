@@ -29,12 +29,12 @@ class PhotoState(StatesGroup):
 
 async def response(message: Message, state: FSMContext, mesg: dict):
     if mesg.get('image'):
-        buffer = await decode(mesg['image'])
-        image_bytes = buffer.read()
-        file = BufferedInputFile(image_bytes, filename="photo.jpg")
-
-        await ChatActionSender.upload_photo(chat_id=message.chat.id, bot=message.bot)
-        await message.bot.send_photo(chat_id=message.chat.id, photo=file)
+        async with ChatActionSender.upload_photo(chat_id=message.chat.id, bot=message.bot):
+            buffer = await decode(mesg['image'])
+            image_bytes = buffer.read()
+            file = BufferedInputFile(image_bytes, filename="photo.jpg")
+            
+            await message.bot.send_photo(chat_id=message.chat.id, photo=file)
         
     raw_text = mesg.get('detail') or mesg.get('message', '')
     formatted = await convert_markdown_to_telegram(raw_text)
@@ -86,7 +86,7 @@ async def send_photo(message: Message, state: FSMContext):
     await message.bot.download_file(file.file_path, destination=buffer)
 
     buffer.seek(0)
-    b64_string = encode_image_from_bytesio(buffer)
+    b64_string = await encode_image_from_bytesio(buffer)
     
     if message.caption:
         await summary_with_photo(message=message, state=state, buffered=b64_string, caption=message.caption)

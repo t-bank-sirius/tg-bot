@@ -15,7 +15,7 @@ async def decode(base64_string: str):
     return buffer
 
 
-def encode_image_from_bytesio(buffer: BytesIO, format: str = 'JPEG') -> str:
+async def encode_image_from_bytesio(buffer: BytesIO, format: str = 'JPEG') -> str:
     buffer.seek(0)
     image = Image.open(buffer)
 
